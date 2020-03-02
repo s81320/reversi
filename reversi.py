@@ -5,6 +5,15 @@ import matplotlib.pyplot as plt
 
 #run with python or pythonw (for MacOS)
 
+
+def input_stone_position():
+        """asks a player to give two integers as coordinates where to put his/her stone.
+        returns a position as a tuple. No error handling."""
+        # get position from player - person
+        p1 = input("input first co-ordinate, range 0 to 7:")
+        p2 = input("input second co-ordinate, range 0 to 7:")
+        return (int(p1), int(p2))
+
 class Player:
     """Two players compete against each other.
     Players communicate through their mediator, the Host.
@@ -15,19 +24,11 @@ class Player:
         """initialize. Set the number. increase the number of created players."""
         pass
 
-    def input_stone_position(self, player_id):
-        """asks a player to give two integers as coordinates where to put his/her stone.
-        returns a position as a tuple. No error handling."""
-        colours = ['red', 'blue']
-        print("Set a "+colours[player_id]+" stone.")
-        # get position from player - person
-        p1 = input("input first co-ordinate, range 0 to 7:")
-        p2 = input("input second co-ordinate, range 0 to 7:")
-        return (int(p1), int(p2))
-
     def propose_stone(self, draw):
         """A player-object gets a keyboard-input from the player-human. If not successful (out of bounds, not free), no stone is set and the game continues (with the next player)."""
-        draw.position = self.input_stone_position(draw.player)
+        colours = ['red', 'blue']
+        print("Set a "+colours[draw.player]+" stone.")
+        draw.position = input_stone_position()
         return draw
 
 
@@ -150,10 +151,10 @@ class RuleChecker:
 #        return self.check_position_exists(position) and self.check_position_free(position) and self.check_enclose_opponent(player_id, position)
 
     def check_position_exists(self, pos = None):
+        """Returns True iff (pos) is on the board.
+        pos is either passed as an argument or is the position of the draw."""
         if pos is None : pos = self.draw.position
         print("check position " , pos)
-        """Returns True iff (pos) is on the board.
-        pos is either passed as an argment or is the position of the draw."""
         return (pos[0] in self.range_of_valid_coordinates) and (pos[1] in self.range_of_valid_coordinates)
 
     def check_position_free(self, pos = None):
@@ -271,7 +272,6 @@ def main():
 
     game_on = True
     current = 0
-    last = 0
 
     draw = Draw()
     documentation = [Draw()] # initiallize with a draw with accepted = True so it is not empty when first used?
