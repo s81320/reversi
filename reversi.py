@@ -21,14 +21,13 @@ class Player:
 
     def __init__(self):
         """initialize. Set the number. increase the number of created players."""
-        pass
+        self.number: int
 
-    def propose_stone(self, draw):
+    def propose_stone(self):
         """A player-object gets a keyboard-input from the player-human. If not successful (out of bounds, not free), no stone is set and the game continues (with the next player)."""
         colours = ['red', 'blue']
-        print("Set a "+colours[draw.player]+" stone.")
-        draw.position = input_stone_position()
-        return draw
+        print("Set a "+colours[self.number]+" stone.")
+        return input_stone_position()
 
 
 class Draw:
@@ -129,24 +128,11 @@ class RuleChecker:
         self.range_of_valid_coordinates = range(0,self.board.size-1)
 
     def check(self):
-        self.draw.accepted = False
+        sel_dir_encl = []
         if self.check_position_exists():
             if self.check_position_free():
-                self.draw.directions_enclosing  = self.select_directions_enclosing()
-                self.draw.accepted = len(self.draw.directions_enclosing)>0
-        return self.draw
-
-#    def evaluate_stone(self, player_id, position):
-#        """Check stone and set it , return True or False"""
-#        return self.set_stone(player_id, tuple(position))
-
-#    def check_stone(self, player_id, position):
-#        """Calls three other check-functions.
-#        Check if the proposed position is within the boundries of the board,
-#        if the position is free / empty and if it creates an enclosing of the stones of the opponent.
-#        """
-#        #code executes only until the first False
-#        return self.check_position_exists(position) and self.check_position_free(position) and self.check_enclose_opponent(player_id, position)
+                sel_dir_encl = self.select_directions_enclosing() 
+        return sel_dir_encl , len(sel_dir_encl)>0
 
     def check_position_exists(self, pos = None):
         """Returns True iff (pos) is on the board.
@@ -262,17 +248,17 @@ def main():
     board.print_scores()
 
     game_on = True
-    current = 0
+    player.number = 0
 
     draw = Draw()
     documentation = [Draw()] # initiallize with a draw with accepted = True so it is not empty when first used?
 
     while game_on:
         draw = Draw()
-        draw.player = current
-        draw = player.propose_stone(draw)
+        draw.player = player.number
+        draw.position = player.propose_stone()
         rule_checker = RuleChecker(board, draw)
-        draw = rule_checker.check()
+        draw.directions_enclosing , draw.accepted = rule_checker.check()
 
         if draw.accepted:
             board.put_stone_on_board(draw)
@@ -290,8 +276,7 @@ def main():
         #for d in documentation:
          #   print(d)
 
-        last = current
-        current = opponent(current)
+        player.number = opponent(player.number)
 
     print("*****************")
     print("*** game over ***")
