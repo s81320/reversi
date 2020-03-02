@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 def input_stone_position():
         """asks a player to give two integers as coordinates where to put his/her stone.
         returns a position as a tuple. No error handling."""
-        # get position from player - person
         p1 = input("input first co-ordinate, range 0 to 7:")
         p2 = input("input second co-ordinate, range 0 to 7:")
         return (int(p1), int(p2))
@@ -117,7 +116,6 @@ class Board:
         """A stone is set on the board. Input: who (player_id_) sets the stone where (position)."""
         if self.check_stone(player_id, position):
             self.board[position] = player_id
-            self.accepted_stone = position
             self.stones_set += 1
             return True
         else:
@@ -134,7 +132,7 @@ class RuleChecker:
         self.draw.accepted = False
         if self.check_position_exists():
             if self.check_position_free():
-                self.draw.directions_enclosing  = self.get_enclosing_directions()
+                self.draw.directions_enclosing  = self.select_directions_enclosing()
                 self.draw.accepted = len(self.draw.directions_enclosing)>0
         return self.draw
 
@@ -154,7 +152,6 @@ class RuleChecker:
         """Returns True iff (pos) is on the board.
         pos is either passed as an argument or is the position of the draw."""
         if pos is None : pos = self.draw.position
-        print("check position " , pos)
         return (pos[0] in self.range_of_valid_coordinates) and (pos[1] in self.range_of_valid_coordinates)
 
     def check_position_free(self, pos = None):
@@ -227,19 +224,13 @@ class RuleChecker:
         else: # undecided -> walk to next position on the beam
             return self.walk_on_beam(colour, next_pos, direction)
 
-    def select_directions_enclosing(self, directions):
-        """Filters directions d such that along the beam starting in start_pos and in direction d
-        at some time another stone is met that has the colour belonging to (player_id).
-        This means setting a stone at start_pos would create an enclosing of the opponent players stones. """
-        start_pos = self.draw.position
-        player_id = self.draw.player
-        
-        return list(filter(lambda d: self.walk_on_beam(player_id, np.array(start_pos) + np.array(d), np.array(d)), directions))
-
-    def get_enclosing_directions(self):
+    def select_directions_enclosing(self):
         directions = self.create_directions_ingoing()
         dir_touch_opponent = self.select_directions_touching(directions)
-        return self.select_directions_enclosing(dir_touch_opponent)
+        start_pos = self.draw.position
+        player_id = self.draw.player
+        return list(filter(lambda d: self.walk_on_beam(player_id, np.array(start_pos) + np.array(d), np.array(d)), directions))
+
 
 def opponent(i):
     """calculate the id for the other player, the opponent."""
