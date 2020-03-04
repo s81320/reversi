@@ -7,13 +7,18 @@ import matplotlib.pyplot as plt
 
 
 def input_stone_position():
-        """asks a player to give two integers as coordinates where to put his/her stone.
+        """Asks a player to give two integers as coordinates where to put his/her stone.
         returns a position as a tuple. No error handling."""
-        p1 = input("input first co-ordinate, range 0 to 7:")
-        p2 = input("input second co-ordinate, range 0 to 7:")
-        return (int(p1), int(p2))
+        p_1 = input("input first co-ordinate, range 0 to 7:")
+        p_2 = input("input second co-ordinate, range 0 to 7:")
+        return (int(p_1), int(p_2))
+
+def opponent(i):
+    """calculate the id for the other player, the opponent."""
+    return (1+i)%2
 
 class Player:
+
     """Two players compete against each other.
     Players communicate through their mediator, the Host.
     Players are identified by their (number), either 0 or 1."""
@@ -32,15 +37,18 @@ class Player:
 
 class Draw:
     def __init__(self):
+        """Setting the basic information, starting empty."""
         self.player: int = 0
         self.position: tuple = ()
         self.accepted = True
-        self.directions_enclosing: list = []    
-    
+        self.directions_enclosing: list = []
+
     def __str__(self):
+        """A way to print the draw to the terminal."""
         return "player: " + str(self.player) + "\nposition: " + str(self.position) + "\naccepted: " + str(self.accepted) + "\ndirections enclosing: " + str(self.directions_enclosing)
 
 class Board:
+
     """The reversi board is an 8 x 8 squares board.
     The Host sets stones on the board.
     Players communicate to the Host where the stone should be set
@@ -75,10 +83,11 @@ class Board:
             self.score[i] = sum(1 for j in range(len(stones_on_board)) if stones_on_board[j] == i)
 
     def get_scores(self):
-        """simple getter function. Returns the score of both (possibly more, later ...) players."""
+        """simple getter function. Returns the score of both players. Red player's score first."""
         return self.score
 
     def print_scores(self):
+        """Currently printing scores to the terminal."""
         print("scores: " , self.get_scores())
 
     def update(self, draw):
@@ -108,41 +117,38 @@ class Board:
         plt.show(block=False)
 
     def put_stone_on_board(self, draw):
+        """From the (draw) the player number is applied to set the value on the boards board."""
         self.board[tuple(draw.position)] = draw.player
         self.stones_set += 1
 
-    def set_stone(self, player_id, position):
-        """A stone is set on the board. Input: who (player_id_) sets the stone where (position)."""
-        if self.check_stone(player_id, position):
-            self.board[position] = player_id
-            self.stones_set += 1
-            return True
-        else:
-            print("Your stone was rejected. Next player, please.")
-            return False
-
 class RuleChecker:
+    """Arguments are a draw with player and position set. And a board."""
     def __init__(self, board:Board, draw:Draw):
+        """Initializes."""
         self.board = board
         self.draw = draw
         self.range_of_valid_coordinates = range(0,self.board.size-1)
 
     def check(self):
+        """Starts the checking. Calls other check and select functions. 
+        Returns if or if not the position complies with reversi rules."""
         sel_dir_encl = []
         if self.check_position_exists():
             if self.check_position_free():
                 sel_dir_encl = self.select_directions_enclosing() 
-        return sel_dir_encl , len(sel_dir_encl)>0
+        return sel_dir_encl, len(sel_dir_encl)>0
 
-    def check_position_exists(self, pos = None):
+    def check_position_exists(self, pos=None):
         """Returns True iff (pos) is on the board.
         pos is either passed as an argument or is the position of the draw."""
-        if pos is None : pos = self.draw.position
+        if pos is None:
+            pos = self.draw.position
         return (pos[0] in self.range_of_valid_coordinates) and (pos[1] in self.range_of_valid_coordinates)
 
-    def check_position_free(self, pos = None):
+    def check_position_free(self, pos=None):
         """Check if a (position) is free. Returns True iff no stone is already placed on that position."""
-        if pos is None: pos = self.draw.position
+        if pos is None:
+            pos = self.draw.position
         return self.board.board[pos] == -1
 
     def check_position_for_same_occupancy(self, position1, position2):
@@ -155,7 +161,7 @@ class RuleChecker:
         So the ordering is imortant here. There is flexibility only in the second argument."""
         return (not self.check_position_free(arg1_position)) and (not self.check_for_same_colour(arg1_position, arg2))
 
-    def check_position_for_same_colour(self,  position1, position2):
+    def check_position_for_same_colour(self, position1, position2):
         """Returns True if both positions are occupied by the same player."""
         return (not self.check_position_free(position1)) and self.check_position_for_same_occupancy(position1, position2)
 
@@ -170,10 +176,11 @@ class RuleChecker:
             return_value = (self.board.board[arg1_position] == arg2)
         return return_value
 
-    def create_directions_ingoing(self, pos = None):
+    def create_directions_ingoing(self, pos=None):
         """Given a (position) this function
         returns all directions that lead to a position that is adjacent to this position and on the board."""
-        if pos is None: pos = self.draw.position
+        if pos is None:
+            pos = self.draw.position
         all_directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (-1, -1), (-1, 1), (1, 1), (1, -1))
 
         # filter returns an iterator, we have to materialize the filter and turn it into a tuple (or list or whatever...)
@@ -211,16 +218,13 @@ class RuleChecker:
             return self.walk_on_beam(colour, next_pos, direction)
 
     def select_directions_enclosing(self):
+        """returns a list of directions / 2-tuples such that the position
+        of the draw creates an enclosing of the opponents stones in this directions."""
         directions = self.create_directions_ingoing()
         dir_touch_opponent = self.select_directions_touching(directions)
         start_pos = self.draw.position
         player_id = self.draw.player
-        return list(filter(lambda d: self.walk_on_beam(player_id, np.array(start_pos) + np.array(d), np.array(d)), directions))
-
-
-def opponent(i):
-    """calculate the id for the other player, the opponent."""
-    return (1+i)%2
+        return list(filter(lambda d: self.walk_on_beam(player_id, np.array(start_pos) + np.array(d), np.array(d)), dir_touch_opponent))
 
 def main():
     """Players act one at a time. Each time through the loop one player is allowed to set a stone.
@@ -258,7 +262,7 @@ def main():
         draw.player = player.number
         draw.position = player.propose_stone()
         rule_checker = RuleChecker(board, draw)
-        draw.directions_enclosing , draw.accepted = rule_checker.check()
+        draw.directions_enclosing, draw.accepted = rule_checker.check()
 
         if draw.accepted:
             board.put_stone_on_board(draw)
@@ -268,6 +272,8 @@ def main():
             board.print_scores()
         else:
             print("The position you chose does not comply with reversi rules.\nNext players turn.")
+
+            # game should end when a player has score 0. this can only be the opponent.
 
         game_on = (draw.accepted or documentation[len(documentation)-1].accepted) and board.stones_set < board.max_nr_stones
 
