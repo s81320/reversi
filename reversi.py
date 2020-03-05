@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 
 def input_stone_position():
+    
     """Asks a player to give two integers as coordinates where to put his/her stone.
     returns a position as a tuple. No error handling."""
     p_1 = input("input first co-ordinate, range 0 to 7:")
@@ -14,7 +15,7 @@ def input_stone_position():
     return (int(p_1), int(p_2))
 
 def opponent(i):
-    """calculate the id for the other player, the opponent."""
+    """Calculate the id for the other player, the opponent."""
     return (1+i)%2
 
 class Player:
@@ -22,7 +23,6 @@ class Player:
     """Two players compete against each other.
     Players communicate through their mediator, the Host.
     Players are identified by their (number), either 0 or 1."""
-
     def __init__(self):
         """initialize. Set the number. increase the number of created players."""
         self.number: int
@@ -93,7 +93,6 @@ class Board:
 
     def update(self, draw):
         """When a player has put a new stone on the board newly includes / cought stones turn change color."""
-
         for direction in draw.directions_enclosing:
             pos = tuple(draw.position)
             done = False
@@ -135,7 +134,6 @@ class RuleChecker:
 
         """Starts the checking. Calls other check and select functions.
         Returns if or if not the position complies with reversi rules."""
-
         sel_dir_encl = []
         if self.check_position_exists():
             if self.check_position_free():
@@ -146,7 +144,6 @@ class RuleChecker:
 
         """Returns True iff (pos) is on the board.
         pos is either passed as an argument or is the position of the draw."""
-
         if pos is None:
             pos = self.draw.position
         return (pos[0] in self.range_of_valid_coordinates) and (pos[1] in self.range_of_valid_coordinates)
@@ -168,7 +165,6 @@ class RuleChecker:
         2 the position is occupied and with a colour different from arg2.
         (Only) Arg2 may be a position or a colour (type tuple or int).
         So the ordering is imortant here. There is flexibility only in the second argument."""
-
         return (not self.check_position_free(arg1_position)) and (not self.check_for_same_colour(arg1_position, arg2))
 
     def check_position_for_same_colour(self, position1, position2):
@@ -180,7 +176,6 @@ class RuleChecker:
         """Should be called with arguments either of type tuple or the same as player.number: int (with values 0 or 1).
         If it is a tuple, it is a position on the board and the colour has to be looked up when comparing.
         If an argument is an int, it already denotes a colour / a players id and thus its colour."""
-
         return_value = True
         if isinstance(arg2, tuple):
             return_value = self.check_position_for_same_colour(arg1_position, arg2)
@@ -193,7 +188,6 @@ class RuleChecker:
         """Given a (position) this function certain directions.
         If no position is given, we use draw.position.
         Returned directions lead to a position that is adjacent to this position and on the board."""
-
         if pos is None:
             pos = self.draw.position
         all_directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (-1, -1), (-1, 1), (1, 1), (1, -1))
@@ -207,7 +201,6 @@ class RuleChecker:
 
         """Filters directions such that (draw.position) + (direction) is of different colour than the players own stone (draw.player).
         Requires input (directions) to be of ingoing directions only."""
-
         return tuple(filter(lambda x: self.check_for_different_colour(tuple(np.array(self.draw.position)+np.array(x)), self.draw.player), directions))
 
 
@@ -222,9 +215,7 @@ class RuleChecker:
         Walking on that beam we take one step at a time, only to the (next_pos).
         We return False if the beam of opponents stone ends in an empty field or at the boundary of the board.
         and True if we meet a stone of our initially set (colour)."""
-
         next_pos = tuple(np.array(position) + np.array(direction))
-
         if not self.check_position_exists(next_pos): # position is on the boundary, next_pos is off the board
             return False
         elif self.check_position_free(next_pos): # position exists, is on board -> but empty
@@ -235,9 +226,7 @@ class RuleChecker:
             return self.walk_on_beam(colour, next_pos, direction)
 
     def select_directions_enclosing(self):
-
         """Returns a list of directions / 2-tuples such that the position of the draw creates an enclosing of the opponents stones in this directions."""
-
         directions = self.create_directions_ingoing()
         dir_touch_opponent = self.select_directions_touching(directions)
         start_pos = self.draw.position
@@ -250,7 +239,6 @@ class RuleChecker:
         1 either this or the last draw have been accepted (game over if both players f* up on their last turn)
         2 the board is not full
         3 the opponent still has stones on the board (game over if opponent is reduced to score 0)."""
-
         doc = self.documentation
         return (self.draw.accepted or doc[len(doc)-1].accepted) and (self.board.stones_set < self.board.max_nr_stones) and (self.board.score[opponent(self.draw.player)] > 0)
 
