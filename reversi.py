@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 
 
 def input_stone_position():
-        """Asks a player to give two integers as coordinates where to put his/her stone.
-        returns a position as a tuple. No error handling."""
-        p_1 = input("input first co-ordinate, range 0 to 7:")
-        p_2 = input("input second co-ordinate, range 0 to 7:")
-        return (int(p_1), int(p_2))
+    """Asks a player to give two integers as coordinates where to put his/her stone.
+    returns a position as a tuple. No error handling."""
+    p_1 = input("input first co-ordinate, range 0 to 7:")
+    p_2 = input("input second co-ordinate, range 0 to 7:")
+    return (int(p_1), int(p_2))
 
 def opponent(i):
     """calculate the id for the other player, the opponent."""
@@ -89,11 +89,11 @@ class Board:
 
     def print_scores(self):
         """Currently printing scores to the terminal."""
-        print("scores: " , self.get_scores())
+        print("scores: ", self.get_scores())
 
     def update(self, draw):
         """When a player has put a new stone on the board newly includes / cought stones turn change color"""
-        
+
         for direction in draw.directions_enclosing:
             pos = tuple(draw.position)
             done = False
@@ -124,21 +124,21 @@ class Board:
 
 class RuleChecker:
     """Arguments are a draw with player and position set. And a board."""
-    def __init__(self, board:Board, draw:Draw, documentation:list):
+    def __init__(self, board: Board, draw: Draw, documentation: list):
         """Initializes."""
         self.board = board
         self.draw = draw
         self.documentation = documentation # documentation only needed for game_on
-        self.range_of_valid_coordinates = range(0,self.board.size-1)
+        self.range_of_valid_coordinates = range(0, self.board.size-1)
 
     def check_position(self):
-        """Starts the checking. Calls other check and select functions. 
+        """Starts the checking. Calls other check and select functions.
         Returns if or if not the position complies with reversi rules."""
         sel_dir_encl = []
         if self.check_position_exists():
             if self.check_position_free():
-                sel_dir_encl = self.select_directions_enclosing() 
-        return sel_dir_encl, len(sel_dir_encl)>0
+                sel_dir_encl = self.select_directions_enclosing()
+        return sel_dir_encl, len(sel_dir_encl) > 0
 
     def check_position_exists(self, pos=None):
         """Returns True iff (pos) is on the board.
@@ -234,7 +234,7 @@ class RuleChecker:
         2 the board is not full
         3 the opponent still has stones on the board (game over if opponent is reduced to score 0)."""
         doc = self.documentation
-        return (self.draw.accepted or doc[len(doc)-1].accepted) and (self.board.stones_set < self.board.max_nr_stones) and (self.board.score[opponent(self.draw.player)] >0)
+        return (self.draw.accepted or doc[len(doc)-1].accepted) and (self.board.stones_set < self.board.max_nr_stones) and (self.board.score[opponent(self.draw.player)] > 0)
 
 def main():
     """Players act one at a time. Each time through the loop one player is allowed to set a stone.
@@ -282,8 +282,6 @@ def main():
             board.print_scores()
         else:
             print("The position you chose does not comply with reversi rules.\nNext players turn.")
-
-            # game should end when a player has score 0. this can only be the opponent.
 
         game_on = rule_checker.game_on() # check if the game continues for another round
         
