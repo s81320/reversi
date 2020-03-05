@@ -22,7 +22,6 @@ class Player:
     """Two players compete against each other.
     Players communicate through their mediator, the Host.
     Players are identified by their (number), either 0 or 1."""
-    # class variables, shared by all instances of this class
 
     def __init__(self):
         """initialize. Set the number. increase the number of created players."""
@@ -59,8 +58,9 @@ class Board:
     Stones of the opponent that are enclosed (along a straight line: up/down-wards, left-to-right or in a diagonal fashion)
     by the new stone of the active player and an old stone (also belonging to the active player) change colour
     and become stones of the active player."""
+
     def __init__(self):
-        """init."""
+        """Init."""
         self.size = 8
         self.max_nr_stones = 64
         self.board = {(k, l):-1 for k in range(self.size) for l in range(self.size)}
@@ -84,7 +84,7 @@ class Board:
             self.score[i] = sum(1 for j in range(len(stones_on_board)) if stones_on_board[j] == i)
 
     def get_scores(self):
-        """simple getter function. Returns the score of both players. Red player's score first."""
+        """Simple getter function. Returns the score of both players. Red player's score first."""
         return self.score
 
     def print_scores(self):
@@ -92,7 +92,7 @@ class Board:
         print("scores: ", self.get_scores())
 
     def update(self, draw):
-        """When a player has put a new stone on the board newly includes / cought stones turn change color"""
+        """When a player has put a new stone on the board newly includes / cought stones turn change color."""
 
         for direction in draw.directions_enclosing:
             pos = tuple(draw.position)
@@ -123,7 +123,7 @@ class Board:
         self.stones_set += 1
 
 class RuleChecker:
-    """Arguments are a draw with player and position set. And a board."""
+    """Arguments are a draw with player and position set. And a board and documentation."""
     def __init__(self, board: Board, draw: Draw, documentation: list):
         """Initializes."""
         self.board = board
@@ -132,8 +132,10 @@ class RuleChecker:
         self.range_of_valid_coordinates = range(0, self.board.size-1)
 
     def check_position(self):
+
         """Starts the checking. Calls other check and select functions.
         Returns if or if not the position complies with reversi rules."""
+
         sel_dir_encl = []
         if self.check_position_exists():
             if self.check_position_free():
@@ -141,8 +143,10 @@ class RuleChecker:
         return sel_dir_encl, len(sel_dir_encl) > 0
 
     def check_position_exists(self, pos=None):
+
         """Returns True iff (pos) is on the board.
         pos is either passed as an argument or is the position of the draw."""
+
         if pos is None:
             pos = self.draw.position
         return (pos[0] in self.range_of_valid_coordinates) and (pos[1] in self.range_of_valid_coordinates)
@@ -158,9 +162,13 @@ class RuleChecker:
         return self.board.board[position1] == self.board.board[position2]
 
     def check_for_different_colour(self, arg1_position, arg2):
-        """Returns True if arg1_position is a position (type tuple) and
-        occupied and with a different colour from arg2, which may be a position or a colour (type tuple or int).
+
+        """Returns True under 2 conditions.
+        1 arg1_position is a position (type tuple) and
+        2 the position is occupied and with a colour different from arg2.
+        (Only) Arg2 may be a position or a colour (type tuple or int).
         So the ordering is imortant here. There is flexibility only in the second argument."""
+
         return (not self.check_position_free(arg1_position)) and (not self.check_for_same_colour(arg1_position, arg2))
 
     def check_position_for_same_colour(self, position1, position2):
@@ -168,9 +176,11 @@ class RuleChecker:
         return (not self.check_position_free(position1)) and self.check_position_for_same_occupancy(position1, position2)
 
     def check_for_same_colour(self, arg1_position, arg2):
+
         """Should be called with arguments either of type tuple or the same as player.number: int (with values 0 or 1).
         If it is a tuple, it is a position on the board and the colour has to be looked up when comparing.
         If an argument is an int, it already denotes a colour / a players id and thus its colour."""
+
         return_value = True
         if isinstance(arg2, tuple):
             return_value = self.check_position_for_same_colour(arg1_position, arg2)
@@ -179,8 +189,11 @@ class RuleChecker:
         return return_value
 
     def create_directions_ingoing(self, pos=None):
-        """Given a (position) this function
-        returns all directions that lead to a position that is adjacent to this position and on the board."""
+
+        """Given a (position) this function certain directions.
+        If no position is given, we use draw.position.
+        Returned directions lead to a position that is adjacent to this position and on the board."""
+
         if pos is None:
             pos = self.draw.position
         all_directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (-1, -1), (-1, 1), (1, 1), (1, -1))
@@ -191,13 +204,15 @@ class RuleChecker:
         # filter needs the data to be filtered as a iterable container
 
     def select_directions_touching(self, directions):
-        """Filters directions such that (draw.position) + (direction) is
-        of different colour than the players own stone (draw.player).
+
+        """Filters directions such that (draw.position) + (direction) is of different colour than the players own stone (draw.player).
         Requires input (directions) to be of ingoing directions only."""
+
         return tuple(filter(lambda x: self.check_for_different_colour(tuple(np.array(self.draw.position)+np.array(x)), self.draw.player), directions))
 
 
     def walk_on_beam(self, colour, position, direction):
+
         """Recursion replacing a while loop.
         On the reversi board a beam is formed
         starting at the (position) a new stone may be [checking stone] or has been [update board] set
@@ -220,8 +235,9 @@ class RuleChecker:
             return self.walk_on_beam(colour, next_pos, direction)
 
     def select_directions_enclosing(self):
-        """returns a list of directions / 2-tuples such that the position
-        of the draw creates an enclosing of the opponents stones in this directions."""
+
+        """Returns a list of directions / 2-tuples such that the position of the draw creates an enclosing of the opponents stones in this directions."""
+
         directions = self.create_directions_ingoing()
         dir_touch_opponent = self.select_directions_touching(directions)
         start_pos = self.draw.position
@@ -229,10 +245,12 @@ class RuleChecker:
         return list(filter(lambda d: self.walk_on_beam(player_id, np.array(start_pos) + np.array(d), np.array(d)), dir_touch_opponent))
 
     def game_on(self):
-        """The game continues iff
+
+        """The game continues iff (all of) the folowing conditions are met.
         1 either this or the last draw have been accepted (game over if both players f* up on their last turn)
         2 the board is not full
         3 the opponent still has stones on the board (game over if opponent is reduced to score 0)."""
+
         doc = self.documentation
         return (self.draw.accepted or doc[len(doc)-1].accepted) and (self.board.stones_set < self.board.max_nr_stones) and (self.board.score[opponent(self.draw.player)] > 0)
 
