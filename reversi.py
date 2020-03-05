@@ -42,10 +42,11 @@ class Draw:
         self.position: tuple = ()
         self.accepted = True
         self.directions_enclosing: list = []
+        self.final = False
 
     def __str__(self):
         """A way to print the draw to the terminal."""
-        return "player: " + str(self.player) + "\nposition: " + str(self.position) + "\naccepted: " + str(self.accepted) + "\ndirections enclosing: " + str(self.directions_enclosing)
+        return "player: " + str(self.player) + "\nposition: " + str(self.position) + "\naccepted: " + str(self.accepted) + "\ndirections enclosing: " + str(self.directions_enclosing) + "\nfinal: " + str(self.final)
 
 class Board:
 
@@ -123,13 +124,14 @@ class Board:
 
 class RuleChecker:
     """Arguments are a draw with player and position set. And a board."""
-    def __init__(self, board:Board, draw:Draw):
+    def __init__(self, board:Board, draw:Draw, documentation:list):
         """Initializes."""
         self.board = board
         self.draw = draw
+        self.documentation = documentation # documentation only needed for game_on
         self.range_of_valid_coordinates = range(0,self.board.size-1)
 
-    def check(self):
+    def check_position(self):
         """Starts the checking. Calls other check and select functions. 
         Returns if or if not the position complies with reversi rules."""
         sel_dir_encl = []
@@ -226,6 +228,14 @@ class RuleChecker:
         player_id = self.draw.player
         return list(filter(lambda d: self.walk_on_beam(player_id, np.array(start_pos) + np.array(d), np.array(d)), dir_touch_opponent))
 
+    def game_on(self):
+        """The game continues iff
+        1 either this or the last draw have been accepted (game over if both players f* up on their last turn)
+        2 the board is not full
+        3 the opponent still has stones on the board (game over if opponent is reduced to score 0)."""
+        doc = self.documentation
+        return (self.draw.accepted or doc[len(doc)-1].accepted) and (self.board.stones_set < self.board.max_nr_stones) and (self.board.score[opponent(self.draw.player)] >0)
+
 def main():
     """Players act one at a time. Each time through the loop one player is allowed to set a stone.
     The other player is sometimes called the opponent.
@@ -255,14 +265,14 @@ def main():
     player.number = 0
 
     draw = Draw()
-    documentation = [Draw()] # initiallize with a draw with accepted = True so it is not empty when first used?
+    documentation = [Draw()] # initialize with one draw. This draw has accepted = True.
 
     while game_on:
         draw = Draw()
         draw.player = player.number
         draw.position = player.propose_stone()
-        rule_checker = RuleChecker(board, draw)
-        draw.directions_enclosing, draw.accepted = rule_checker.check()
+        rule_checker = RuleChecker(board, draw, documentation)
+        draw.directions_enclosing, draw.accepted = rule_checker.check_position()
 
         if draw.accepted:
             board.put_stone_on_board(draw)
@@ -275,21 +285,15 @@ def main():
 
             # game should end when a player has score 0. this can only be the opponent.
 
-        game_on = (draw.accepted or documentation[len(documentation)-1].accepted) and board.stones_set < board.max_nr_stones
-
+        game_on = rule_checker.game_on() # check if the game continues for another round
+        
         documentation.append(draw)
-
-        #for d in documentation:
-         #   print(d)
 
         player.number = opponent(player.number)
 
     print("*****************")
     print("*** game over ***")
     print("*****************")
-
-    #for d in documentation:
-     #       print(d)
 
     scores_at_end = board.get_scores()
     board.print_scores()
