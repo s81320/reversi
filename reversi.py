@@ -12,7 +12,19 @@ def input_stone_position():
     returns a position as a tuple. No error handling."""
     p_1 = input("input first co-ordinate, range 0 to 7:")
     p_2 = input("input second co-ordinate, range 0 to 7:")
-    return (int(p_1), int(p_2))
+    
+    # if input is anything else but 1 2 3 4 5 6 7 8 9 0 ipython shell returns a ValueError
+
+    try:
+        return (int(p_1), int(p_2))
+    except ValueError as val_err:
+        print("A ValueError occured with message {}".format(val_err))
+        print("You should input something like 1 (then press ENTER) 5 (then press ENTER).")
+        repeat = input("Do you want to try again [type t] or end the game [type e] or continue [type what you want]?")
+        if repeat == 't':
+            return input_stone_position()
+        elif repeat == 'e':
+            print("Press ctrl + c to end the game.")
 
 def opponent(i):
     """Calculate the id for the other player, the opponent."""
