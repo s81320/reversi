@@ -10,12 +10,11 @@ import matplotlib.pyplot as plt
 #run with python or pythonw (for MacOS)
 
 def input_stone_position():
-    
+
     """Asks a player to give two integers as coordinates where to put their stone.
     returns a position as a tuple."""
     p_1 = input("input first co-ordinate, range 0 to 7:")
     p_2 = input("input second co-ordinate, range 0 to 7:")
-    
     # if input is anything else but 1 2 3 4 5 6 7 8 9 0 ipython shell returns a ValueError
 
     try:
@@ -34,13 +33,18 @@ def opponent(i):
     return -i
 
 def player_sequence(i):
+    'Player ids / numbers are -1 and 1 and are converted into 0 and 1 to allow accessing list.'
     return int((1+i)/2)
 
-def add(x,y): return x+y
+def add(x, y):
+    'add two numbers.'
+    return x+y
 
 class Position(tuple):
-    def step(self,direction):
-        return Position(map(add,self,direction))
+    'Position inherits from tuple and only adds the step method.'
+    def step(self, direction):
+        'Adds two tuples in a vector fashion. First tuple has to be a Position. Method returns a Position.'
+        return Position(map(add, self, direction))
 
 class Player:
 
@@ -59,6 +63,7 @@ class Player:
 
 
 class Draw:
+    """Draw collects data."""
     def __init__(self):
         """Setting the basic information, starting empty."""
         self.player: int = 0
@@ -87,8 +92,8 @@ class Board:
         """Init."""
         self.size = 8
         self.max_nr_stones = 64
-        self.board = np.zeros(shape=(self.size,self.size),dtype=int)
-        self.score = [] # empty list
+        self.board = np.zeros(shape=(self.size, self.size), dtype=int)
+        self.score = [0, 0] # empty list
         self.stones_set = 0
 
     def setup(self):
@@ -102,11 +107,8 @@ class Board:
 
     def update_scores(self):
         """To be called after a new stone has been set. Calculates from scratch."""
-        self.score = [0, 0]
-        #stones_on_board = list(self.board.values())
-        
-        self.score[0] = (-1)*sum(self.board[self.board==-1])
-        self.score[1] = sum(self.board[self.board==1])
+        self.score[0] = (-1)*sum(self.board[self.board == -1])
+        self.score[1] = sum(self.board[self.board == 1])
             #self.score[i] = sum(1 for j in range(len(stones_on_board)) if stones_on_board[j] == i)
 
     def get_scores(self):
@@ -134,8 +136,8 @@ class Board:
     def print(self):
         """Outputs the board as a graph."""
         # it would be nice just to add one point instead of printing all again from scratch
-        stones_player_0 = [(i,j) for i in range(self.size) for j in range(self.size) if self.board[i,j]==-1]
-        stones_player_1 = [(i,j) for i in range(self.size) for j in range(self.size) if self.board[i,j]==1]
+        stones_player_0 = [(i, j) for i in range(self.size) for j in range(self.size) if self.board[i, j] == -1]
+        stones_player_1 = [(i, j) for i in range(self.size) for j in range(self.size) if self.board[i, j] == 1]
         plt.plot([0, self.size-1, 0, self.size-1], [0, 0, self.size-1, self.size-1], marker='x', ls='')
         plt.plot(*zip(*stones_player_0), marker='o', color='r', ls='')
         plt.plot(*zip(*stones_player_1), marker='o', color='b', ls='')
@@ -316,7 +318,7 @@ def main():
             print("The position you chose does not comply with reversi rules.\nNext players turn.")
 
         game_on = rule_checker.game_on() # check if the game continues for another round
-        
+
         documentation.append(draw)
 
         player.number = opponent(player.number)
